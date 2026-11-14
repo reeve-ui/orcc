@@ -1,0 +1,6 @@
+# Opsional untuk shared hosting yang menaruh seluruh proyek di public_html.
+# Jika document root sudah diarahkan ke /public, file ini tidak diperlukan.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
