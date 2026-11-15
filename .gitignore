@@ -1,5 +1,6 @@
 /vendor
 /node_modules
+/composer.phar
 /public/build
 /public/hot
 /public/storage

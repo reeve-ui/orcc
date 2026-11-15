@@ -1,10 +1,13 @@
 <?php
 
+$versionFile = base_path('VERSION');
+$version = is_file($versionFile) ? trim((string) file_get_contents($versionFile)) : '';
+
 return [
 
     'name' => env('APP_NAME', 'ORCC4CHURCH'),
 
-    'version' => env('APP_VERSION', '1.0.2'),
+    'version' => $version !== '' ? $version : env('APP_VERSION', '1.1.0'),
 
     'env' => env('APP_ENV', 'production'),
 

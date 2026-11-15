@@ -4,7 +4,7 @@ ORCC4CHURCH adalah aplikasi web untuk membantu sekretariat gereja mengelola **Ka
 
 Aplikasi ini dibangun dengan Laravel 12, Blade, Tailwind CSS, Alpine.js, dan Vite. Identitas gereja, logo, kode penomoran KKJ, serta catatan kartu dapat diubah dari aplikasi tanpa mengedit kode.
 
-**Versi saat ini:** 1.0.2 · [Riwayat perubahan](CHANGELOG.md)
+**Versi saat ini:** 1.1.0 · [Riwayat perubahan](CHANGELOG.md)
 
 > **Tidak ada data contoh KKJ/jemaat di repositori ini.** Setelah instalasi, database dimulai kosong untuk data keluarga dan jemaat. Isi data melalui formulir atau impor workbook Excel milik gereja Anda.
 
@@ -18,6 +18,7 @@ Aplikasi ini dibangun dengan Laravel 12, Blade, Tailwind CSS, Alpine.js, dan Vit
 - [Impor data Excel](#impor-data-excel)
 - [Peran dan akses](#peran-dan-akses)
 - [Konfigurasi](#konfigurasi)
+- [Pembaruan aplikasi](#pembaruan-aplikasi)
 - [Versi dan changelog](#versi-dan-changelog)
 - [Data wilayah](#data-wilayah)
 - [Pengujian](#pengujian)
@@ -42,6 +43,7 @@ Aplikasi ini dibangun dengan Laravel 12, Blade, Tailwind CSS, Alpine.js, dan Vit
 - **Dark mode & mobile** — tema gelap/terang, sidebar responsif, dan tabel yang berubah menjadi daftar kartu di layar kecil.
 - **Impor Excel** — unggah workbook dari **Pengaturan Gereja**, unduh template siap isi, uji dengan mode dry-run, dan impor ulang dengan opsi fresh.
 - **Halaman error** — 403, 404, 419, 429, 500, dan 503 dengan tampilan yang konsisten.
+- **Pembaruan aplikasi** — admin dapat memeriksa commit terbaru di GitHub dan menjalankan pembaruan dari **Pengaturan Gereja** tanpa login ke server.
 
 ## Teknologi
 
@@ -62,6 +64,8 @@ Aplikasi ini dibangun dengan Laravel 12, Blade, Tailwind CSS, Alpine.js, dan Vit
 - PHP **8.2 atau lebih baru**
 - Composer 2
 - Node.js **20 atau lebih baru** dan npm
+- Git (diperlukan untuk tombol pembaruan aplikasi)
+- Fungsi PHP `exec` dan `proc_open` tidak dinonaktifkan (untuk tombol pembaruan)
 - Ekstensi PHP: `dom`, `fileinfo`, `mbstring`, `openssl`, `pdo`, `tokenizer`, `xml`, `zip`
 - Ekstensi database: `pdo_sqlite` untuk SQLite, atau `pdo_mysql` untuk MySQL/MariaDB
 - Ekstensi tambahan yang disarankan: `gd`, `intl`
@@ -77,11 +81,11 @@ php -m
 ### 1. Clone repositori
 
 ```bash
-git clone https://github.com/USERNAME/orcc4church.git
-cd orcc4church
+git clone https://github.com/reeve-ui/orcc.git
+cd orcc
 ```
 
-Ganti `USERNAME` dengan akun GitHub pemilik repositori.
+Gunakan clone Git, bukan unduhan ZIP, agar tombol pembaruan di **Pengaturan Gereja** dapat bekerja. Remote `origin` harus mengarah ke repositori resmi tersebut.
 
 ### 2. Pasang dependensi
 
@@ -288,11 +292,11 @@ Matriks lengkap dan catatan keamanan: [docs/ROLES.md](docs/ROLES.md).
 
 ## Konfigurasi
 
-Nama dan versi aplikasi diatur di `.env`:
+Nama aplikasi diatur di `.env`. Versi aplikasi dibaca dari file `VERSION` di root proyek; `APP_VERSION` di `.env` hanya dipakai sebagai cadangan bila file tersebut tidak ada.
 
 ```dotenv
 APP_NAME="ORCC4CHURCH"
-APP_VERSION=1.0.2
+APP_VERSION=1.1.0
 ```
 
 Identitas gereja, logo, kode penomoran KKJ, catatan kartu, serta nama dan jabatan penanda tangan diubah dari menu **Pengaturan Gereja** (khusus admin). Nilainya disimpan di tabel `church_settings`, sehingga aplikasi tidak perlu diedit setelah instalasi.
@@ -314,9 +318,55 @@ CHURCH_CARD_VERSION="1.0"
 
 Logo disimpan di disk `public` (`storage/app/public/church`). Saat diunggah, logo JPG/PNG otomatis diperkecil menjadi maksimal 512 × 512 px dengan rasio tetap dan disimpan ulang sebagai PNG. Jalankan `php artisan storage:link` sekali agar logo dapat ditampilkan di aplikasi. Pada PDF, logo disematkan sebagai data URI sehingga tetap tampil tanpa bergantung pada symlink.
 
+## Pembaruan aplikasi
+
+Admin dapat membuka **Pengaturan Gereja**, klik **Cek pembaruan**, lalu klik **Update sekarang** bila ada commit baru di GitHub. Proses berjalan di latar belakang dan statusnya dipantau di halaman yang sama.
+
+Langkah yang dijalankan:
+
+1. `git pull --ff-only origin main`
+2. `composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader`
+3. `php artisan migrate --force`
+4. `npm ci` dan `npm run build`
+5. `php artisan optimize:clear`
+
+Syarat agar tombol pembaruan bekerja:
+
+- instalasi berupa clone Git dan remote `origin` mengarah ke repositori resmi;
+- web server dapat menjalankan Git, PHP CLI, Composer, dan npm;
+- web server memiliki akses tulis ke folder proyek dan `.git`;
+- working tree bersih (tidak ada perubahan file lokal yang belum di-commit);
+- fungsi `exec` dan `proc_open` tidak dinonaktifkan.
+
+Konfigurasi di `.env`:
+
+```dotenv
+APP_UPDATE_ENABLED=true
+APP_UPDATE_REPOSITORY=reeve-ui/orcc
+APP_UPDATE_BRANCH=main
+APP_UPDATE_BUILD_ASSETS=true
+APP_UPDATE_TIMEOUT=900
+# APP_UPDATE_PHP_BINARY=/usr/bin/php
+# APP_UPDATE_GIT_BINARY=git
+# APP_UPDATE_COMPOSER_BINARY=composer
+# APP_UPDATE_NPM_BINARY=npm
+```
+
+Jika server tidak mengizinkan `exec`, jalankan lewat SSH:
+
+```bash
+php artisan orcc4church:update
+```
+
+Perintah CLI tetap memerlukan fungsi `proc_open` karena proses internal memakai komponen Process Laravel.
+
+Log lengkap: `storage/logs/update.log`. Status terakhir: `storage/app/private/update-status.json`. Detail dan troubleshooting: [docs/UPDATES.md](docs/UPDATES.md).
+
+> Backup database dan folder `storage/app/public` sebelum memperbarui. Update sebaiknya dilakukan saat aplikasi tidak sedang dipakai. Jika server memakai OPcache dengan `opcache.validate_timestamps=0`, reload PHP-FPM setelah update agar kode baru dimuat.
+
 ## Versi dan changelog
 
-Versi aplikasi ditampilkan di footer, halaman masuk, halaman verifikasi publik, halaman error, dan halaman Pengaturan Gereja. Nilai versi diatur melalui `APP_VERSION` di `.env`.
+Versi aplikasi ditampilkan di footer, halaman masuk, halaman verifikasi publik, halaman error, dan halaman Pengaturan Gereja. Sumber utama versi adalah file [`VERSION`](VERSION) di root proyek. `APP_VERSION` di `.env` hanya menjadi cadangan bila file tersebut tidak tersedia.
 
 Setiap perubahan yang dirilis harus dicatat di [CHANGELOG.md](CHANGELOG.md). Gunakan format Semantic Versioning:
 
@@ -324,11 +374,13 @@ Setiap perubahan yang dirilis harus dicatat di [CHANGELOG.md](CHANGELOG.md). Gun
 - `MINOR` untuk fitur baru yang kompatibel,
 - `PATCH` untuk perbaikan bug atau perubahan kecil.
 
-Setelah mengubah `APP_VERSION`, jalankan:
+Saat merilis versi baru, ubah isi `VERSION` dan `CHANGELOG.md`, lalu jalankan:
 
 ```bash
 php artisan optimize:clear
 ```
+
+Instalasi yang menggunakan tombol pembaruan akan menerima perubahan `VERSION` bersama kode terbaru dari GitHub.
 
 ### Format nomor KKJ
 
@@ -413,7 +465,7 @@ Pemeriksaan tambahan:
 npm run build
 ```
 
-Cakupan tes mencakup hierarki peran, klasifikasi usia, akses jemaat, akses pengerja, hapus oleh leader, pengelolaan pengguna oleh admin, privasi profil antaranggota keluarga, token verifikasi, halaman verifikasi publik, pengaturan gereja, kunci kode gereja, penomoran KKJ otomatis/reset tahunan, validasi alamat berjenjang, serta impor Excel (service, dry-run, fresh, idempotensi, unggah admin, dan template).
+Cakupan tes mencakup hierarki peran, klasifikasi usia, akses jemaat, akses pengerja, hapus oleh leader, pengelolaan pengguna oleh admin, privasi profil antaranggota keluarga, token verifikasi, halaman verifikasi publik, pengaturan gereja, kunci kode gereja, penomoran KKJ otomatis/reset tahunan, validasi alamat berjenjang, impor Excel (service, dry-run, fresh, idempotensi, unggah admin, dan template), serta pembaruan aplikasi (akses admin, cek, mulai, dan status).
 
 ## Catatan produksi
 
@@ -423,6 +475,7 @@ Cakupan tes mencakup hierarki peran, klasifikasi usia, akses jemaat, akses penge
 - Jalankan `php artisan storage:link` agar foto keluarga/jemaat dan logo dapat diakses.
 - Jalankan `npm run build`, lalu `php artisan optimize`.
 - Pastikan folder `storage/` dan `bootstrap/cache/` dapat ditulis oleh web server.
+- Untuk tombol pembaruan, pastikan instalasi adalah clone Git, remote `origin` benar, dan web server dapat menjalankan Git, PHP CLI, Composer, npm, serta menulis ke folder proyek. Jika tidak memungkinkan, set `APP_UPDATE_ENABLED=false` dan jalankan `php artisan orcc4church:update` lewat SSH.
 - Backup database dan folder `storage/app/public` secara berkala.
 - Data berisi NIK, tanggal lahir, dan kontak. Terapkan kebijakan privasi, pembatasan akses, dan retensi data sesuai UU PDP.
 - Impor `--fresh` bersifat destruktif; jangan dijalankan di produksi tanpa backup.
@@ -432,22 +485,24 @@ Cakupan tes mencakup hierarki peran, klasifikasi usia, akses jemaat, akses penge
 
 ```text
 app/
-  Console/Commands/                     # impor workbook dan data wilayah
+  Console/Commands/                     # impor workbook, data wilayah, reset password, update aplikasi
   Enums/                                # Role, Gender, status
-  Http/Controllers/                     # auth, dashboard, KKJ, jemaat, PDF, verifikasi publik, user, pengaturan, wilayah
+  Http/Controllers/                     # auth, dashboard, KKJ, jemaat, PDF, verifikasi publik, user, pengaturan, pembaruan, wilayah
   Http/Requests/                        # validasi form
   Models/                               # Family, Member, User, ChurchSetting, Region
   Policies/                             # aturan akses per peran
-  Services/                             # statistik, QR code, impor wilayah, penomoran KKJ, importer & template Excel
+  Services/                             # statistik, QR code, impor wilayah, penomoran KKJ, importer & template Excel, update aplikasi
   Support/AgeCategory.php               # kategori usia
 config/church.php                       # nilai awal identitas gereja, kartu, kategori usia
+config/update.php                       # konfigurasi pembaruan aplikasi
 database/data/kodepos.csv               # sumber data wilayah
 database/migrations/                    # skema KKJ, jemaat, pengguna, pengaturan, wilayah, urutan KKJ
 database/seeders/                       # admin dan wilayah
 resources/views/                        # Blade: layout, dashboard, form, PDF, pengaturan, error
 routes/web.php                          # seluruh rute
-docs/                                   # pemetaan data, wilayah, peran, pertanyaan
+docs/                                   # pemetaan data, wilayah, peran, pembaruan, pertanyaan
 tests/                                  # unit & feature test
+VERSION                                 # versi rilis aplikasi (sumber utama)
 LICENSE                                 # lisensi MIT
 CHANGELOG.md                            # riwayat versi aplikasi
 ```
@@ -464,6 +519,12 @@ CHANGELOG.md                            # riwayat versi aplikasi
 | Tidak bisa login / lupa kata sandi | Jalankan `php artisan orcc4church:reset-password email@contoh.com`; tambahkan `--activate` jika akun nonaktif. |
 | Logo/foto tidak tampil | Jalankan `php artisan storage:link`. |
 | Perubahan tampilan tidak muncul | Jalankan `php artisan view:clear` dan `php artisan optimize:clear`. |
+| Tombol pembaruan tidak muncul | Pastikan `APP_UPDATE_ENABLED=true`, login sebagai admin, dan instalasi berupa clone Git. |
+| Update ditolak karena perubahan lokal | Commit atau simpan perubahan file lokal terlebih dahulu; tombol update hanya bekerja pada working tree bersih. |
+| Update gagal: Git/Composer/npm tidak ditemukan | Pasang aplikasi tersebut atau set path absolut di `APP_UPDATE_GIT_BINARY`, `APP_UPDATE_COMPOSER_BINARY`, dan `APP_UPDATE_NPM_BINARY`. |
+| Update gagal: `exec` dinonaktifkan | Jalankan `php artisan orcc4church:update` lewat SSH atau aktifkan fungsi `exec`. |
+| Update gagal: `proc_open` dinonaktifkan | Aktifkan fungsi `proc_open` atau jalankan langkah pembaruan secara manual. |
+| Update gagal: izin folder | Beri web server akses tulis ke folder proyek dan `.git`, atau jalankan update lewat SSH. |
 | Izin folder ditolak | Pastikan `storage/` dan `bootstrap/cache/` dapat ditulis oleh web server. |
 
 ## Lisensi

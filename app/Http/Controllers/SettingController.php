@@ -12,6 +12,7 @@ use App\Services\DataResetService;
 use App\Services\LogoService;
 use App\Services\OrccdataImporter;
 use App\Services\OrccdataTemplate;
+use App\Services\UpdateService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -24,7 +25,7 @@ use Throwable;
 
 class SettingController extends Controller
 {
-    public function edit(Request $request): View
+    public function edit(Request $request, UpdateService $updates): View
     {
         abort_unless($request->user()?->isAdmin(), 403);
 
@@ -32,6 +33,8 @@ class SettingController extends Controller
             'settings' => ChurchSetting::current(),
             'familyCount' => Family::query()->count(),
             'memberCount' => Member::query()->count(),
+            'updateStatus' => $updates->status(),
+            'updateCheck' => $updates->lastCheck(),
         ]);
     }
 

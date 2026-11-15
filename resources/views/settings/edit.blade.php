@@ -25,7 +25,9 @@
     @endif
 
     @if (session('import_result'))
-        @php($result = session('import_result'))
+        @php
+            $result = session('import_result');
+        @endphp
         <div class="card overflow-hidden">
             <div class="flex flex-col gap-3 border-b border-slate-100 px-5 py-4 dark:border-slate-800 sm:flex-row sm:items-start sm:justify-between sm:px-6">
                 <div>
@@ -314,6 +316,175 @@
             </div>
         </form>
     </div>
+
+    @if (config('update.enabled'))
+        @php
+            $updateState = $updateStatus['state'] ?? 'idle';
+            $updateAvailable = (bool) ($updateCheck['update_available'] ?? false);
+            $updateDirty = (bool) ($updateCheck['dirty'] ?? false);
+            $updateRunning = $updateState === 'running';
+            $canUpdate = $updateAvailable && ! $updateDirty;
+        @endphp
+
+        <div class="card"
+             x-data="{
+                 state: @js($updateState),
+                 step: @js($updateStatus['step'] ?? null),
+                 message: @js($updateStatus['message'] ?? null),
+                 output: @js($updateStatus['output'] ?? null),
+                 warnings: @js($updateStatus['warnings'] ?? []),
+                 running: @js($updateRunning),
+                 canUpdate: @js($canUpdate),
+                 init() {
+                     if (this.running) this.poll();
+                 },
+                 poll() {
+                     fetch('{{ route('settings.update.status') }}', {
+                         headers: { 'Accept': 'application/json' },
+                         credentials: 'same-origin',
+                         cache: 'no-store',
+                     })
+                         .then((response) => response.ok ? response.json() : Promise.reject())
+                         .then((data) => {
+                             this.state = data.status.state;
+                             this.step = data.status.step;
+                             this.message = data.status.message;
+                             this.output = data.status.output;
+                             this.warnings = data.status.warnings || [];
+                             this.running = this.state === 'running';
+                             if (this.state === 'success') this.canUpdate = false;
+                             if (this.running) setTimeout(() => this.poll(), 2000);
+                         })
+                         .catch(() => setTimeout(() => this.poll(), 5000));
+                 }
+             }">
+            <div class="flex flex-col gap-3 border-b border-slate-100 px-5 py-4 dark:border-slate-800 sm:flex-row sm:items-start sm:justify-between sm:px-6">
+                <div class="flex items-start gap-3">
+                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-300">
+                        <x-icon name="refresh" class="h-5 w-5" />
+                    </span>
+                    <div>
+                        <h2 class="section-title">Pembaruan aplikasi</h2>
+                        <p class="mt-1 text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">Periksa dan pasang pembaruan terbaru dari GitHub. Proses ini menjalankan git pull, Composer, migrasi database, build aset, dan pembersihan cache.</p>
+                    </div>
+                </div>
+                <span class="badge shrink-0 bg-brand-50 text-brand-700 ring-brand-600/20 dark:bg-brand-500/10 dark:text-brand-300 dark:ring-brand-500/30">
+                    Versi {{ config('app.version') }}
+                </span>
+            </div>
+
+            <div class="card-pad space-y-4">
+                <div class="grid gap-3 sm:grid-cols-3">
+                    <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-900/60">
+                        <p class="text-[10px] font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Commit terpasang</p>
+                        <p class="mt-1 font-mono text-sm font-bold text-slate-900 dark:text-slate-100">{{ $updateCheck['current_short'] ?? '-' }}</p>
+                    </div>
+                    <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-900/60">
+                        <p class="text-[10px] font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Commit GitHub</p>
+                        @if (! empty($updateCheck['remote_url']))
+                            <a href="{{ $updateCheck['remote_url'] }}" target="_blank" rel="noopener" class="mt-1 inline-block font-mono text-sm font-bold text-brand-600 hover:underline dark:text-brand-300">
+                                {{ $updateCheck['remote_short'] ?? '-' }}
+                            </a>
+                        @else
+                            <p class="mt-1 font-mono text-sm font-bold text-slate-900 dark:text-slate-100">{{ $updateCheck['remote_short'] ?? '-' }}</p>
+                        @endif
+                    </div>
+                    <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-900/60">
+                        <p class="text-[10px] font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Terakhir dicek</p>
+                        <p class="mt-1 text-sm font-bold text-slate-900 dark:text-slate-100">
+                            {{ ! empty($updateCheck['checked_at']) ? \Illuminate\Support\Carbon::parse($updateCheck['checked_at'])->diffForHumans() : 'Belum dicek' }}
+                        </p>
+                    </div>
+                </div>
+
+                @if ($updateCheck === null)
+                    <p class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs leading-relaxed text-slate-600 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300">
+                        Klik <span class="font-bold">Cek pembaruan</span> untuk membandingkan commit aplikasi dengan branch <span class="font-mono">{{ config('update.branch') }}</span> di GitHub.
+                    </p>
+                @elseif (! empty($updateCheck['error']))
+                    <div class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs leading-relaxed text-rose-800 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-200">
+                        {{ $updateCheck['error'] }}
+                    </div>
+                @elseif ($updateDirty)
+                    <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-relaxed text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+                        Ada perubahan file lokal yang belum di-commit. Update otomatis dinonaktifkan sampai perubahan tersebut disimpan atau di-commit.
+                    </div>
+                @elseif ($updateAvailable)
+                    <div class="rounded-xl border border-brand-200 bg-brand-50 px-4 py-3 text-xs leading-relaxed text-brand-900 dark:border-brand-500/30 dark:bg-brand-500/10 dark:text-brand-100">
+                        Pembaruan tersedia. Backup database terlebih dahulu, lalu klik <span class="font-bold">Update sekarang</span>.
+                    </div>
+                @elseif (($updateCheck['state'] ?? null) === 'up_to_date')
+                    <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs leading-relaxed text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200">
+                        Aplikasi sudah menggunakan versi terbaru dari GitHub.
+                    </div>
+                @elseif (($updateCheck['state'] ?? null) === 'ahead')
+                    <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-relaxed text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+                        Instalasi memiliki commit lokal yang lebih baru dari GitHub. Update otomatis dinonaktifkan.
+                    </div>
+                @elseif (($updateCheck['state'] ?? null) === 'diverged')
+                    <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-relaxed text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+                        Riwayat commit lokal berbeda dari GitHub. Selesaikan konflik secara manual sebelum memperbarui.
+                    </div>
+                @endif
+
+                <div x-show="running" x-cloak class="rounded-xl border border-brand-200 bg-brand-50 px-4 py-3 text-xs leading-relaxed text-brand-900 dark:border-brand-500/30 dark:bg-brand-500/10 dark:text-brand-100">
+                    <p class="font-bold" x-text="message || 'Proses pembaruan sedang berjalan...'"></p>
+                    <p class="mt-1">Langkah: <span class="font-mono" x-text="step || 'memulai'"></span></p>
+                    <pre x-show="output" x-text="output" class="mt-2 max-h-48 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-white/70 p-3 font-mono text-[11px] leading-relaxed text-slate-700 dark:bg-slate-950/40 dark:text-slate-200"></pre>
+                    <p class="mt-2 text-[11px] opacity-80">Halaman ini memantau status secara otomatis. Proses tetap berjalan meskipun halaman ditutup.</p>
+                </div>
+
+                <div x-show="state === 'success'" x-cloak class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs leading-relaxed text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200">
+                    <p class="font-bold" x-text="message"></p>
+                    <template x-if="warnings.length">
+                        <ul class="mt-2 list-inside list-disc space-y-1">
+                            <template x-for="warning in warnings" :key="warning">
+                                <li x-text="warning"></li>
+                            </template>
+                        </ul>
+                    </template>
+                    <a href="{{ route('settings.edit') }}" class="btn-secondary btn-sm mt-3">
+                        <x-icon name="refresh" class="h-4 w-4" />
+                        Muat ulang halaman
+                    </a>
+                </div>
+
+                <div x-show="state === 'failed'" x-cloak class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs leading-relaxed text-rose-800 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-200">
+                    <p class="font-bold" x-text="message"></p>
+                    <pre x-show="output" x-text="output" class="mt-2 max-h-48 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-white/70 p-3 font-mono text-[11px] leading-relaxed text-slate-700 dark:bg-slate-950/40 dark:text-slate-200"></pre>
+                    <p class="mt-2 text-[11px] opacity-80">Log lengkap: <span class="font-mono">storage/logs/update.log</span></p>
+                </div>
+
+                <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-[11px] leading-relaxed text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+                    <p class="font-bold">Sebelum memperbarui</p>
+                    <ul class="mt-2 list-inside list-disc space-y-1">
+                        <li>Backup database dan folder <span class="font-mono">storage/app/public</span>.</li>
+                        <li>Pastikan server memiliki Git, Composer, Node.js, dan akses tulis ke folder aplikasi.</li>
+                        <li>Update sebaiknya dilakukan saat aplikasi tidak sedang dipakai.</li>
+                    </ul>
+                </div>
+
+                <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                    <form method="POST" action="{{ route('settings.update.check') }}">
+                        @csrf
+                        <button type="submit" class="btn-secondary" :disabled="running">
+                            <x-icon name="refresh" class="h-4 w-4" />
+                            Cek pembaruan
+                        </button>
+                    </form>
+
+                    <form method="POST" action="{{ route('settings.update.app') }}"
+                          onsubmit="return confirm('Aplikasi akan diperbarui dari GitHub. Pastikan database sudah dibackup. Lanjutkan?')">
+                        @csrf
+                        <button type="submit" class="btn-primary" :disabled="!canUpdate || running">
+                            <x-icon name="download" class="h-4 w-4" />
+                            Update sekarang
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    @endif
 
     <div class="card border-rose-200 dark:border-rose-500/30"
          x-data="{

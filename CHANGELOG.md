@@ -6,6 +6,39 @@ Format versi mengikuti [Semantic Versioning](https://semver.org/lang/id/):
 `MAJOR.MINOR.PATCH`. Riwayat perubahan mengikuti struktur
 [Keep a Changelog](https://keepachangelog.com/id/1.1.0/).
 
+## [1.1.0] - 2026-11-15
+
+### Ditambahkan
+
+- Tombol **Pembaruan aplikasi** khusus admin di Pengaturan Gereja untuk
+  memeriksa commit terbaru di GitHub dan menjalankan pembaruan tanpa login
+  ke server.
+- Pemeriksaan pembaruan menggunakan `git ls-remote` dan perbandingan commit,
+  dengan status terpasang, commit GitHub, serta tautan commit.
+- Proses pembaruan di latar belakang: `git pull --ff-only`, Composer,
+  migrasi database, build aset Vite, dan pembersihan cache.
+- Perintah `orcc4church:update` untuk pembaruan manual lewat SSH.
+- Status pembaruan di `storage/app/private/update-status.json` dan log di
+  `storage/logs/update.log`.
+- Konfigurasi `APP_UPDATE_*` untuk mengatur repositori, branch, binary, dan
+  build aset.
+- Dokumentasi pembaruan di [docs/UPDATES.md](docs/UPDATES.md).
+
+### Diubah
+
+- Versi aplikasi sekarang dibaca dari file `VERSION` di root proyek.
+  `APP_VERSION` di `.env` hanya menjadi cadangan bila file tersebut tidak ada.
+- Instruksi instalasi memakai repositori resmi
+  `https://github.com/reeve-ui/orcc.git`.
+- Halaman Pengaturan Gereja menampilkan versi aplikasi dan status pembaruan.
+
+### Catatan
+
+- Pembaruan otomatis memerlukan instalasi hasil `git clone`, working tree
+  bersih, Git, PHP CLI, Composer, Node.js/npm, fungsi `exec`/`proc_open`, dan
+  akses tulis ke folder proyek.
+- Backup database dan folder `storage/app/public` sebelum memperbarui.
+
 ## [1.0.2] - 2026-11-12
 
 ### Diperbaiki

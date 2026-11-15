@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AppUpdateController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FamilyCardController;
@@ -37,6 +38,16 @@ Route::middleware('auth')->group(function (): void {
     Route::delete('/pengaturan/reset-data', [SettingController::class, 'resetData'])->name('settings.reset-data');
     Route::post('/pengaturan/impor', [SettingController::class, 'import'])->name('settings.import');
     Route::get('/pengaturan/impor/template', [SettingController::class, 'template'])->name('settings.import.template');
+
+    Route::post('/pengaturan/pembaruan/cek', [AppUpdateController::class, 'check'])
+        ->middleware('throttle:10,1')
+        ->name('settings.update.check');
+    Route::post('/pengaturan/pembaruan', [AppUpdateController::class, 'update'])
+        ->middleware('throttle:10,1')
+        ->name('settings.update.app');
+    Route::get('/pengaturan/pembaruan/status', [AppUpdateController::class, 'status'])
+        ->middleware('throttle:120,1')
+        ->name('settings.update.status');
 
     Route::prefix('wilayah')->name('regions.')->middleware('throttle:120,1')->group(function (): void {
         Route::get('/provinsi', [RegionController::class, 'provinces'])->name('provinces');
