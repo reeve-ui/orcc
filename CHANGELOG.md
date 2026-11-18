@@ -6,6 +6,17 @@ Format versi mengikuti [Semantic Versioning](https://semver.org/lang/id/):
 `MAJOR.MINOR.PATCH`. Riwayat perubahan mengikuti struktur
 [Keep a Changelog](https://keepachangelog.com/id/1.1.0/).
 
+## [1.2.0] - 2026-11-18
+
+### Ditambahkan
+
+- Kolom **Tanggal Baptis** pada data jemaat, berupa input tanggal yang otomatis
+  diisi tanggal hari ini saat menambah jemaat baru dan dapat dikosongkan.
+- Kolom **Tempat Baptis** pada data jemaat dengan placeholder `nama gereja`.
+- Data baptisan ditampilkan pada profil jemaat, didukung impor Excel melalui
+  kolom `TANGGAL BAPTIS` dan `TEMPAT BAPTIS`, serta tersedia pada template impor.
+- Migrasi `baptism_date` dan `baptism_place` pada tabel `members`.
+
 ## [1.1.0] - 2026-11-15
 
 ### Ditambahkan

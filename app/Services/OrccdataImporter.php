@@ -183,6 +183,14 @@ class OrccdataImporter
                     $rowFlags[] = 'tanggal lahir tidak valid';
                 }
 
+                $baptismRaw = $row['TANGGAL BAPTIS'] ?? null;
+                $baptismDate = $this->dateValue($baptismRaw);
+                if ($this->text($baptismRaw) && ! $baptismDate) {
+                    $rowFlags[] = 'tanggal baptis tidak valid';
+                }
+
+                $baptismPlace = $this->meaningfulText($row['TEMPAT BAPTIS'] ?? null, $rowFlags, 'tempat baptis berupa kode angka');
+
                 $spouse = $this->meaningfulText($row['NAMA PASANGAN'] ?? null, $rowFlags, 'nama pasangan berupa kode angka');
                 $ministry = $this->meaningfulText($row['PELAYANAN'] ?? null, $rowFlags, 'pelayanan berupa kode angka');
 
@@ -215,6 +223,8 @@ class OrccdataImporter
                     'whatsapp' => $whatsapp,
                     'email' => $email,
                     'birth_date' => $birthDate,
+                    'baptism_date' => $baptismDate,
+                    'baptism_place' => $baptismPlace,
                     'marital_status' => $marital,
                     'spouse_name' => $spouse,
                     'photo_path' => $this->text($row['PHOTO'] ?? null),

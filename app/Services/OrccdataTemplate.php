@@ -54,6 +54,8 @@ class OrccdataTemplate
         'KOMSEL',
         'KETERANGAN',
         'QRCODE',
+        'TANGGAL BAPTIS',
+        'TEMPAT BAPTIS',
     ];
 
     public function make(): Spreadsheet
@@ -75,6 +77,7 @@ class OrccdataTemplate
         $members->getStyle('A2:B'.self::DATA_ROWS)->getNumberFormat()->setFormatCode('@');
         $members->getStyle('H2:H'.self::DATA_ROWS)->getNumberFormat()->setFormatCode('@');
         $members->getStyle('L2:L'.self::DATA_ROWS)->getNumberFormat()->setFormatCode('yyyy-mm-dd');
+        $members->getStyle('T2:T'.self::DATA_ROWS)->getNumberFormat()->setFormatCode('yyyy-mm-dd');
 
         $this->addListValidation($members, 'E', 'Kepala Keluarga,Pasangan,Anak,Saudara,Anggota Keluarga');
         $this->addListValidation($members, 'G', 'Pria,Wanita');
@@ -142,7 +145,7 @@ class OrccdataTemplate
             ['3. Satu baris pada sheet JEMAAT adalah satu anggota. KKJID dan NAMA LENGKAP wajib diisi.'],
             ['4. KTJID opsional, tetapi jika diisi harus unik dan dipakai sebagai kunci pembaruan anggota.'],
             ['5. Impor tidak menimpa data yang sudah terisi. Gunakan opsi fresh hanya jika ingin menghapus seluruh KKJ dan jemaat lebih dulu.'],
-            ['6. Format TANGGAL LAHIR: YYYY-MM-DD atau tanggal Excel.'],
+            ['6. Format TANGGAL LAHIR dan TANGGAL BAPTIS: YYYY-MM-DD atau tanggal Excel.'],
             ['7. STATUS KELUARGA: Kepala Keluarga, Pasangan, Anak, Saudara, Anggota Keluarga.'],
             ['8. JENIS KELAMIN: Pria, Wanita.'],
             ['9. STATUS PERKAWINAN: Belum Menikah, Telah Menikah, Pernah Menikah.'],
@@ -151,6 +154,7 @@ class OrccdataTemplate
             ['12. QRCODE lama tidak dipakai untuk QR baru. QR pada kartu dibuat dari tautan verifikasi publik.'],
             ['13. Baris tanpa KKJID atau tanpa NAMA LENGKAP akan dilewati dan dihitung.'],
             ['14. Sheet PETUNJUK ini tidak dibaca oleh proses impor.'],
+            ['15. TANGGAL BAPTIS dan TEMPAT BAPTIS opsional; kosongkan jika belum diketahui.'],
             [''],
             ['CONTOH NILAI'],
             ['KKJID: SEKRT00260001'],
@@ -168,6 +172,8 @@ class OrccdataTemplate
             ['JENIS KELAMIN: Pria'],
             ['TANGGAL LAHIR: 1985-04-17'],
             ['STATUS PERKAWINAN: Telah Menikah'],
+            ['TANGGAL BAPTIS: 2005-12-25'],
+            ['TEMPAT BAPTIS: Gereja Contoh'],
         ];
 
         $sheet->fromArray($lines, null, 'A1');

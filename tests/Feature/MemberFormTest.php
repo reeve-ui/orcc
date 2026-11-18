@@ -39,6 +39,10 @@ class MemberFormTest extends TestCase
             ->assertSee('name="gender" required', false)
             ->assertSee('name="marital_status" required', false)
             ->assertSee('name="birth_date" type="date" required min="1927-11-07" max="2026-11-07"', false)
+            ->assertSee('name="baptism_date" type="date" max="2026-11-07"', false)
+            ->assertSee('value="2026-11-07"', false)
+            ->assertSee('name="baptism_place" type="text"', false)
+            ->assertSee('placeholder="nama gereja"', false)
             ->assertSee('<option value="Pria" selected>Pria</option>', false)
             ->assertSee('<option value="Belum Menikah" selected>Belum Menikah</option>', false)
             ->assertSee('<option value="Telah Menikah"', false)
@@ -229,6 +233,66 @@ class MemberFormTest extends TestCase
             '1927-11-07',
             Member::query()->where('family_id', $family->id)->firstOrFail()->birth_date?->toDateString()
         );
+    }
+
+    public function test_tanggal_dan_tempat_baptis_disimpan(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-11-07 10:00:00'));
+
+        $family = $this->family();
+        $admin = $this->admin();
+
+        $this->actingAs($admin)
+            ->post(route('members.store'), $this->payload($family, [
+                'family_status' => 'Kepala Keluarga',
+                'gender' => 'Pria',
+                'marital_status' => 'Telah Menikah',
+                'baptism_date' => '2005-12-25',
+                'baptism_place' => '  Gereja Uji  ',
+            ]))
+            ->assertRedirect(route('families.show', $family));
+
+        $member = Member::query()->where('family_id', $family->id)->firstOrFail();
+
+        $this->assertSame('2005-12-25', $member->baptism_date?->toDateString());
+        $this->assertSame('Gereja Uji', $member->baptism_place);
+    }
+
+    public function test_tanggal_baptis_tidak_boleh_di_masa_depan(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-11-07 10:00:00'));
+
+        $family = $this->family();
+        $admin = $this->admin();
+
+        $this->actingAs($admin)
+            ->post(route('members.store'), $this->payload($family, [
+                'family_status' => 'Kepala Keluarga',
+                'gender' => 'Pria',
+                'marital_status' => 'Telah Menikah',
+                'baptism_date' => '2026-11-08',
+            ]))
+            ->assertSessionHasErrors('baptism_date');
+
+        $this->assertDatabaseCount('members', 0);
+    }
+
+    public function test_profil_menampilkan_data_baptis(): void
+    {
+        $family = $this->family();
+        $admin = $this->admin();
+        $member = $this->member($family, [
+            'baptism_date' => '2005-12-25',
+            'baptism_place' => 'Gereja Uji',
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('members.show', $member))
+            ->assertOk()
+            ->assertSee('Tanggal baptis')
+            ->assertSee('25 Desember 2005')
+            ->assertSee('Tempat baptis')
+            ->assertSee('Gereja Uji');
     }
 
     public function test_ktj_lama_dipertahankan_saat_edit_tidak_mengubah_sumber_ktj(): void

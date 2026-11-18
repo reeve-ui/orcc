@@ -122,6 +122,14 @@
                     <dd class="text-right text-xs font-semibold text-slate-900 dark:text-white">{{ $member->birth_date?->translatedFormat('d F Y') ?? '—' }}</dd>
                 </div>
                 <div class="flex items-start justify-between gap-4">
+                    <dt class="text-xs text-slate-500 dark:text-slate-400">Tanggal baptis</dt>
+                    <dd class="text-right text-xs font-semibold text-slate-900 dark:text-white">{{ $member->baptism_date?->translatedFormat('d F Y') ?? '—' }}</dd>
+                </div>
+                <div class="flex items-start justify-between gap-4">
+                    <dt class="text-xs text-slate-500 dark:text-slate-400">Tempat baptis</dt>
+                    <dd class="text-right text-xs font-semibold text-slate-900 dark:text-white">{{ $member->baptism_place ?: '—' }}</dd>
+                </div>
+                <div class="flex items-start justify-between gap-4">
                     <dt class="text-xs text-slate-500 dark:text-slate-400">Status pernikahan</dt>
                     <dd class="text-right text-xs font-semibold text-slate-900 dark:text-white">{{ $member->marital_status ?: '—' }}</dd>
                 </div>

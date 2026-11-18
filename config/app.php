@@ -7,7 +7,7 @@ return [
 
     'name' => env('APP_NAME', 'ORCC4CHURCH'),
 
-    'version' => $version !== '' ? $version : env('APP_VERSION', '1.1.0'),
+    'version' => $version !== '' ? $version : env('APP_VERSION', '1.2.0'),
 
     'env' => env('APP_ENV', 'production'),
 

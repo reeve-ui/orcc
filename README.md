@@ -4,7 +4,7 @@ ORCC4CHURCH adalah aplikasi web untuk membantu sekretariat gereja mengelola **Ka
 
 Aplikasi ini dibangun dengan Laravel 12, Blade, Tailwind CSS, Alpine.js, dan Vite. Identitas gereja, logo, kode penomoran KKJ, serta catatan kartu dapat diubah dari aplikasi tanpa mengedit kode.
 
-**Versi saat ini:** 1.1.0 · [Riwayat perubahan](CHANGELOG.md)
+**Versi saat ini:** 1.2.0 · [Riwayat perubahan](CHANGELOG.md)
 
 > **Tidak ada data contoh KKJ/jemaat di repositori ini.** Setelah instalasi, database dimulai kosong untuk data keluarga dan jemaat. Isi data melalui formulir atau impor workbook Excel milik gereja Anda.
 
@@ -31,6 +31,7 @@ Aplikasi ini dibangun dengan Laravel 12, Blade, Tailwind CSS, Alpine.js, dan Vit
 
 - **Data KKJ** — tambah, lihat, ubah, hapus, cari, dan filter keluarga. Nomor KKJ dibuat otomatis dari kode gereja, tahun, dan urutan keluarga.
 - **Data jemaat** — setiap anggota terhubung ke satu KKJ. Pencarian berdasarkan nama, KTJ, NIK, telepon, atau nomor KKJ; filter status, gender, dan kategori usia.
+- **Data baptisan** — tanggal dan tempat baptis dapat dicatat pada data jemaat. Tanggal baptis otomatis diisi hari ini saat menambah jemaat baru dan dapat dikosongkan jika belum diketahui.
 - **Alamat berjenjang** — provinsi → kabupaten/kota → kecamatan → kelurahan → kode pos, bersumber dari `database/data/kodepos.csv`.
 - **Pengaturan gereja** — admin dapat mengubah identitas gereja, kode penomoran KKJ, catatan kartu, nama dan jabatan penanda tangan, serta logo.
 - **Reset data** — admin dapat menghapus seluruh data KKJ, jemaat, foto, dan urutan nomor KKJ dengan konfirmasi teks `RESET DATA` serta centang pernyataan. Akun pengguna, pengaturan gereja, dan data wilayah tetap dipertahankan.
@@ -296,7 +297,7 @@ Nama aplikasi diatur di `.env`. Versi aplikasi dibaca dari file `VERSION` di roo
 
 ```dotenv
 APP_NAME="ORCC4CHURCH"
-APP_VERSION=1.1.0
+APP_VERSION=1.2.0
 ```
 
 Identitas gereja, logo, kode penomoran KKJ, catatan kartu, serta nama dan jabatan penanda tangan diubah dari menu **Pengaturan Gereja** (khusus admin). Nilainya disimpan di tabel `church_settings`, sehingga aplikasi tidak perlu diedit setelah instalasi.

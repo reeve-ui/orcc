@@ -30,6 +30,7 @@
     ];
 
     $minBirthDate = now()->subYears(99)->toDateString();
+    $baptismDateValue = old('baptism_date', $member->baptism_date?->format('Y-m-d') ?? ($member->exists ? '' : now()->format('Y-m-d')));
 @endphp
 
 @section('content')
@@ -176,6 +177,31 @@
                            class="input @error('spouse_name') input-error @enderror">
                     @error('spouse_name') <p class="error-text">{{ $message }}</p> @enderror
                     <p class="hint">Ditampilkan untuk status pernikahan Telah Menikah.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="border-b border-slate-100 px-5 py-4 dark:border-slate-800 sm:px-6">
+                <h2 class="section-title">Data baptisan</h2>
+                <p class="mt-1 text-[11px] text-slate-500 dark:text-slate-400">Opsional. Lengkapi jika data baptisan jemaat sudah diketahui.</p>
+            </div>
+            <div class="card-pad grid gap-5 sm:grid-cols-2">
+                <div>
+                    <label for="baptism_date" class="label">Tanggal Baptis</label>
+                    <input id="baptism_date" name="baptism_date" type="date" max="{{ now()->format('Y-m-d') }}"
+                           value="{{ $baptismDateValue }}"
+                           class="input @error('baptism_date') input-error @enderror">
+                    @error('baptism_date') <p class="error-text">{{ $message }}</p> @enderror
+                    <p class="hint">Pada data baru, tanggal baptis otomatis diisi hari ini. Kosongkan jika belum diketahui.</p>
+                </div>
+
+                <div>
+                    <label for="baptism_place" class="label">Tempat Baptis</label>
+                    <input id="baptism_place" name="baptism_place" type="text" value="{{ old('baptism_place', $member->baptism_place) }}"
+                           placeholder="nama gereja"
+                           class="input @error('baptism_place') input-error @enderror">
+                    @error('baptism_place') <p class="error-text">{{ $message }}</p> @enderror
                 </div>
             </div>
         </div>

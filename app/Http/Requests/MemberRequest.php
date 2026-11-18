@@ -32,6 +32,10 @@ class MemberRequest extends FormRequest
         if ($this->filled('email')) {
             $this->merge(['email' => Str::lower(trim((string) $this->input('email')))]);
         }
+
+        if ($this->filled('baptism_place')) {
+            $this->merge(['baptism_place' => trim((string) $this->input('baptism_place'))]);
+        }
     }
 
     /**
@@ -62,6 +66,13 @@ class MemberRequest extends FormRequest
                 'before_or_equal:today',
                 'after_or_equal:'.now()->subYears(99)->toDateString(),
             ],
+            'baptism_date' => [
+                'nullable',
+                'date',
+                'before_or_equal:today',
+                'after_or_equal:1900-01-01',
+            ],
+            'baptism_place' => ['nullable', 'string', 'max:150'],
             'marital_status' => ['required', Rule::in(Member::MARITAL_STATUSES)],
             'spouse_name' => ['nullable', 'string', 'max:150'],
             'ministry' => ['nullable', 'string', 'max:150'],
@@ -92,6 +103,9 @@ class MemberRequest extends FormRequest
             'birth_date.required' => 'Tanggal lahir wajib diisi.',
             'birth_date.before_or_equal' => 'Tanggal lahir tidak boleh di masa depan.',
             'birth_date.after_or_equal' => 'Tanggal lahir minimal 99 tahun sebelum hari ini.',
+            'baptism_date.before_or_equal' => 'Tanggal baptis tidak boleh di masa depan.',
+            'baptism_date.after_or_equal' => 'Tanggal baptis tidak boleh sebelum tahun 1900.',
+            'baptism_place.max' => 'Tempat baptis maksimal 150 karakter.',
             'photo.max' => 'Ukuran foto maksimal 2 MB.',
         ];
     }

@@ -62,6 +62,8 @@ Alamat hasil impor masih berupa teks bebas. Saat KKJ diubah, form meminta alamat
 | `WHATSAPP` | `whatsapp` | Dibersihkan; 8–15 digit |
 | `EMAIL` | `email` | Harus lolos validasi email; disimpan huruf kecil |
 | `TANGGAL LAHIR` | `birth_date` | Serial Excel atau tanggal teks; disimpan sebagai `date` |
+| `TANGGAL BAPTIS` | `baptism_date` | Opsional; serial Excel atau tanggal teks, tidak boleh di masa depan |
+| `TEMPAT BAPTIS` | `baptism_place` | Opsional; teks nama gereja/tempat baptisan |
 | `STATUS PERKAWINAN` | `marital_status` | Harus salah satu: Belum Menikah, Telah Menikah, Pernah Menikah. Nilai lama `Sudah Menikah` tetap diterima dan dipetakan ke `Telah Menikah`. |
 | `NAMA PASANGAN` | `spouse_name` | Teks bermakna; kode angka murni ditolak |
 | `PHOTO` | `photo_path` | Nama file/default dari workbook, bukan berkas gambar |
@@ -90,6 +92,12 @@ Pada workbook contoh: 454 dari 455 anggota memiliki gender; 1 kosong.
 - Teks diurai dengan Carbon.
 - Ditolak jika sebelum 1900, di masa depan, atau berusia lebih dari 110 tahun.
 - Pada workbook contoh: 452 terisi, 3 kosong, tidak ada yang ditolak.
+
+### Tanggal baptis
+
+- Sama seperti tanggal lahir: angka diperlakukan sebagai serial Excel, teks diurai dengan Carbon.
+- Opsional; dikosongkan jika tidak ada. Tanggal di masa depan atau sebelum 1900 ditolak dan dicatat sebagai flag `tanggal baptis tidak valid`.
+- `TEMPAT BAPTIS` disimpan sebagai teks; nilai yang hanya berupa kode angka murni ditolak dan dicatat sebagai flag.
 
 ### Telepon / WhatsApp
 

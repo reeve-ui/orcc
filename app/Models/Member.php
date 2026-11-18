@@ -56,6 +56,8 @@ class Member extends Model
         'whatsapp',
         'email',
         'birth_date',
+        'baptism_date',
+        'baptism_place',
         'marital_status',
         'spouse_name',
         'photo_path',
@@ -77,6 +79,7 @@ class Member extends Model
             'child_order' => 'integer',
             'gender' => Gender::class,
             'birth_date' => 'date',
+            'baptism_date' => 'date',
             'data_flags' => 'array',
             'legacy_raw' => 'array',
         ];

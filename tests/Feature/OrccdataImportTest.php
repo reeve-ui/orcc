@@ -61,7 +61,11 @@ class OrccdataImportTest extends TestCase
             'nik' => '3276010101010001',
             'email' => 'kepala@example.test',
             'marital_status' => 'Telah Menikah',
+            'baptism_place' => 'Gereja Uji',
         ]);
+
+        $member = Member::query()->where('ktj_id', 'TEST-001-01')->firstOrFail();
+        $this->assertSame('2005-12-25', $member->baptism_date?->toDateString());
     }
 
     public function test_impor_dry_run_tidak_menyimpan_perubahan(): void
@@ -185,6 +189,8 @@ class OrccdataImportTest extends TestCase
         $this->assertSame(['KKJ', 'JEMAAT', 'PETUNJUK'], $spreadsheet->getSheetNames());
         $this->assertSame('KKJID', $spreadsheet->getSheetByName('KKJ')?->getCell('A1')->getValue());
         $this->assertSame('NAMA LENGKAP', $spreadsheet->getSheetByName('JEMAAT')?->getCell('C1')->getValue());
+        $this->assertSame('TANGGAL BAPTIS', $spreadsheet->getSheetByName('JEMAAT')?->getCell('T1')->getValue());
+        $this->assertSame('TEMPAT BAPTIS', $spreadsheet->getSheetByName('JEMAAT')?->getCell('U1')->getValue());
         $spreadsheet->disconnectWorksheets();
     }
 
@@ -221,11 +227,13 @@ class OrccdataImportTest extends TestCase
                     'KKJID', 'KTJID', 'NAMA LENGKAP', 'ALIAS', 'STATUS KELUARGA', 'ANAK KE',
                     'JENIS KELAMIN', 'NOMOR KTP', 'SELULER', 'WHATSAPP', 'EMAIL', 'TANGGAL LAHIR',
                     'STATUS PERKAWINAN', 'NAMA PASANGAN', 'PHOTO', 'PELAYANAN', 'KOMSEL', 'KETERANGAN', 'QRCODE',
+                    'TANGGAL BAPTIS', 'TEMPAT BAPTIS',
                 ],
                 [
                     'TEST-001', 'TEST-001-01', 'Kepala Keluarga Uji', null, 'Kepala Keluarga', null,
                     'Pria', '3276010101010001', '081234567890', '081234567890', 'kepala@example.test',
                     '1985-04-17', 'Sudah Menikah', null, null, null, null, null, null,
+                    '2005-12-25', 'Gereja Uji',
                 ],
             ], null, 'A1');
         }
