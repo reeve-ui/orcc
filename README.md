@@ -336,7 +336,7 @@ Syarat agar tombol pembaruan bekerja:
 - instalasi berupa clone Git dan remote `origin` mengarah ke repositori resmi;
 - web server dapat menjalankan Git, PHP CLI, Composer, dan npm;
 - web server memiliki akses tulis ke folder proyek dan `.git`;
-- working tree bersih (tidak ada perubahan file lokal yang belum di-commit);
+- tidak ada perubahan pada file yang dilacak Git (file yang tidak dilacak tidak menghalangi);
 - fungsi `exec` dan `proc_open` tidak dinonaktifkan.
 
 Konfigurasi di `.env`:
@@ -521,7 +521,7 @@ CHANGELOG.md                            # riwayat versi aplikasi
 | Logo/foto tidak tampil | Jalankan `php artisan storage:link`. |
 | Perubahan tampilan tidak muncul | Jalankan `php artisan view:clear` dan `php artisan optimize:clear`. |
 | Tombol pembaruan tidak muncul | Pastikan `APP_UPDATE_ENABLED=true`, login sebagai admin, dan instalasi berupa clone Git. |
-| Update ditolak karena perubahan lokal | Commit atau simpan perubahan file lokal terlebih dahulu; tombol update hanya bekerja pada working tree bersih. |
+| Update ditolak karena perubahan lokal | Commit, stash, atau kembalikan perubahan pada file yang dilacak Git. File yang tidak dilacak Git tidak menghalangi update. |
 | Update gagal: Git/Composer/npm tidak ditemukan | Pasang aplikasi tersebut atau set path absolut di `APP_UPDATE_GIT_BINARY`, `APP_UPDATE_COMPOSER_BINARY`, dan `APP_UPDATE_NPM_BINARY`. |
 | Update gagal: `exec` dinonaktifkan | Jalankan `php artisan orcc4church:update` lewat SSH atau aktifkan fungsi `exec`. |
 | Update gagal: `proc_open` dinonaktifkan | Aktifkan fungsi `proc_open` atau jalankan langkah pembaruan secara manual. |

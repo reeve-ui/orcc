@@ -17,6 +17,14 @@ Format versi mengikuti [Semantic Versioning](https://semver.org/lang/id/):
   kolom `TANGGAL BAPTIS` dan `TEMPAT BAPTIS`, serta tersedia pada template impor.
 - Migrasi `baptism_date` dan `baptism_place` pada tabel `members`.
 
+### Diperbaiki
+
+- Pemeriksaan pembaruan tidak lagi menganggap file yang tidak dilacak Git
+  (misalnya ZIP atau file sementara) sebagai perubahan lokal yang menghalangi
+  update.
+- Halaman Pengaturan Gereja menampilkan daftar file yang berubah saat update
+  ditolak karena perubahan lokal.
+
 ## [1.1.0] - 2026-11-15
 
 ### Ditambahkan

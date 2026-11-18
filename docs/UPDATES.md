@@ -26,7 +26,7 @@ Jika server tidak memenuhi syarat tersebut, gunakan perintah CLI lewat SSH.
 2. Buka **Pengaturan Gereja**.
 3. Pada kartu **Pembaruan aplikasi**, klik **Cek pembaruan**.
 4. Aplikasi menampilkan commit terpasang, commit GitHub, dan statusnya.
-5. Jika tersedia pembaruan dan working tree bersih, klik **Update sekarang**.
+5. Jika tersedia pembaruan dan tidak ada perubahan pada file yang dilacak Git, klik **Update sekarang**.
 6. Konfirmasi dialog, lalu tunggu sampai status berubah menjadi berhasil atau gagal. Halaman akan memantau status secara otomatis.
 7. Setelah berhasil, klik **Muat ulang halaman** agar versi baru ditampilkan.
 
@@ -126,7 +126,8 @@ Status berisi langkah terakhir, pesan, keluaran perintah, dan peringatan. File t
 - Hanya admin yang dapat membuka halaman, memeriksa, dan menjalankan pembaruan.
 - Permintaan cek dan update menggunakan CSRF; semua rute menggunakan throttle.
 - Proses memakai lock agar dua pembaruan tidak berjalan bersamaan.
-- Pembaruan ditolak bila folder bukan repositori Git, working tree kotor, commit lokal lebih baru, riwayat berbeda, atau tidak ada pembaruan.
+- Pembaruan ditolak bila folder bukan repositori Git, ada perubahan pada file yang dilacak Git, commit lokal lebih baru, riwayat berbeda, atau tidak ada pembaruan.
+- File yang tidak dilacak Git (misalnya ZIP atau file sementara di folder aplikasi) tidak menghalangi pembaruan. Jika file tersebut bentrok dengan file baru dari GitHub, `git pull` akan berhenti dan menampilkan pesan yang jelas.
 - Repositori harus publik atau kredensial Git harus sudah tersedia untuk web server.
 - Pembaruan tidak mengubah `.env` atau file upload. Migrasi database dapat mengubah skema; backup database sebelum memperbarui.
 - Pembaruan tidak membuat backup otomatis. Backup database dan `storage/app/public` sebelum memperbarui.
@@ -145,7 +146,21 @@ Instalasi berasal dari ZIP, bukan `git clone`. Ubah menjadi clone Git atau perba
 
 ### "Ada perubahan file lokal"
 
-Ada file yang dilacak Git dan sudah diubah. Commit, stash, atau kembalikan perubahan tersebut. Jangan menghapus file pengguna yang tidak dilacak Git.
+Ada file yang dilacak Git dan sudah diubah. Halaman Pengaturan Gereja menampilkan daftar file yang berubah. Jalankan perintah berikut di folder aplikasi:
+
+```bash
+git status --porcelain --untracked-files=no
+```
+
+Lalu commit, stash, atau kembalikan perubahan tersebut:
+
+```bash
+git stash push -m "perubahan sebelum update"
+# atau
+git restore path/ke/file
+```
+
+File yang tidak dilacak Git tidak menghalangi pembaruan. Jangan menghapus file pengguna yang tidak dilacak Git.
 
 ### "Git tidak tersedia" atau "Composer gagal"
 

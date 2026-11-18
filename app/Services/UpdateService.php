@@ -430,7 +430,7 @@ class UpdateService
         $result['current_commit'] = $localCommit;
         $result['current_short'] = substr($localCommit, 0, 7);
 
-        $workingTree = $this->runCommand($this->gitCommand(['status', '--porcelain']), 30);
+        $workingTree = $this->runCommand($this->gitCommand(['status', '--porcelain', '--untracked-files=no']), 30);
 
         if (! $workingTree['successful']) {
             $result['state'] = 'error';
@@ -439,7 +439,13 @@ class UpdateService
             return $result;
         }
 
-        $result['dirty'] = trim($workingTree['output']) !== '';
+        $dirtyFiles = array_values(array_filter(
+            preg_split('/\R/', trim($workingTree['output'])) ?: [],
+            fn (string $line): bool => trim($line) !== ''
+        ));
+
+        $result['dirty'] = $dirtyFiles !== [];
+        $result['dirty_files'] = array_slice($dirtyFiles, 0, 10);
 
         $remote = $this->runCommand(
             $this->gitCommand(['ls-remote', 'origin', 'refs/heads/'.$this->branch()]),
@@ -516,6 +522,7 @@ class UpdateService
             'enabled' => $this->enabled(),
             'git' => false,
             'dirty' => false,
+            'dirty_files' => [],
             'state' => 'unknown',
             'update_available' => false,
             'current_commit' => null,

@@ -407,7 +407,16 @@
                     </div>
                 @elseif ($updateDirty)
                     <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-relaxed text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
-                        Ada perubahan file lokal yang belum di-commit. Update otomatis dinonaktifkan sampai perubahan tersebut disimpan atau di-commit.
+                        <p>Ada perubahan file lokal yang belum di-commit. Update otomatis dinonaktifkan sampai perubahan tersebut disimpan atau di-commit.</p>
+                        @if (! empty($updateCheck['dirty_files']))
+                            <p class="mt-2 font-semibold">File yang berubah:</p>
+                            <ul class="mt-1 list-inside list-disc space-y-1 font-mono text-[11px]">
+                                @foreach ($updateCheck['dirty_files'] as $dirtyFile)
+                                    <li class="break-all">{{ $dirtyFile }}</li>
+                                @endforeach
+                            </ul>
+                            <p class="mt-2">Jalankan <span class="font-mono">git status</span> di folder aplikasi, lalu commit, stash, atau kembalikan file tersebut.</p>
+                        @endif
                     </div>
                 @elseif ($updateAvailable)
                     <div class="rounded-xl border border-brand-200 bg-brand-50 px-4 py-3 text-xs leading-relaxed text-brand-900 dark:border-brand-500/30 dark:bg-brand-500/10 dark:text-brand-100">

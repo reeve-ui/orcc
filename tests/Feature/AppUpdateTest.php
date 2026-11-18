@@ -48,6 +48,28 @@ class AppUpdateTest extends TestCase
             ->assertDontSee('Pembaruan aplikasi');
     }
 
+    public function test_kartu_pembaruan_menampilkan_file_lokal_yang_berubah(): void
+    {
+        $admin = $this->user(Role::Admin, 'admin.file.lokal@example.test');
+
+        $this->mock(UpdateService::class, function ($mock): void {
+            $mock->shouldReceive('status')->once()->andReturn($this->idleStatus());
+            $mock->shouldReceive('lastCheck')->once()->andReturn(array_merge($this->upToDateCheck(), [
+                'state' => 'behind',
+                'update_available' => true,
+                'dirty' => true,
+                'dirty_files' => ['M app/Services/UpdateService.php'],
+            ]));
+        });
+
+        $this->actingAs($admin)
+            ->get(route('settings.edit'))
+            ->assertOk()
+            ->assertSee('Ada perubahan file lokal yang belum di-commit.')
+            ->assertSee('File yang berubah:')
+            ->assertSee('app/Services/UpdateService.php');
+    }
+
     public function test_selain_admin_tidak_dapat_mengakses_pembaruan(): void
     {
         $pengerja = $this->user(Role::Pengerja, 'pengerja.pembaruan@example.test');
@@ -167,6 +189,7 @@ class AppUpdateTest extends TestCase
             'enabled' => true,
             'git' => true,
             'dirty' => false,
+            'dirty_files' => [],
             'state' => 'up_to_date',
             'update_available' => false,
             'current_commit' => str_repeat('a', 40),
