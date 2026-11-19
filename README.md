@@ -6,10 +6,13 @@ Aplikasi ini dibangun dengan Laravel 12, Blade, Tailwind CSS, Alpine.js, dan Vit
 
 **Versi saat ini:** 1.2.0 · [Riwayat perubahan](CHANGELOG.md)
 
+**Website resmi:** [orcc.web.id](https://orcc.web.id) — tautan demo dan informasi login demo tersedia di sana.
+
 > **Tidak ada data contoh KKJ/jemaat di repositori ini.** Setelah instalasi, database dimulai kosong untuk data keluarga dan jemaat. Isi data melalui formulir atau impor workbook Excel milik gereja Anda.
 
 ## Daftar isi
 
+- [Website dan demo](#website-dan-demo)
 - [Fitur](#fitur)
 - [Teknologi](#teknologi)
 - [Persyaratan](#persyaratan)
@@ -26,6 +29,12 @@ Aplikasi ini dibangun dengan Laravel 12, Blade, Tailwind CSS, Alpine.js, dan Vit
 - [Struktur proyek](#struktur-proyek)
 - [Pemecahan masalah](#pemecahan-masalah)
 - [Lisensi](#lisensi)
+
+## Website dan demo
+
+Situs resmi aplikasi: [orcc.web.id](https://orcc.web.id)
+
+Melalui situs tersebut tersedia tautan ke versi demo aplikasi beserta informasi login demo. Gunakan tautan dan kredensial yang tertera di situs resmi. Kredensial demo dapat berubah sewaktu-waktu dan tidak boleh dipakai untuk data produksi.
 
 ## Fitur
 
@@ -198,7 +207,7 @@ ADMIN_PASSWORD=password
 | --- | --- | --- |
 | Admin | `admin@sekretariatgereja.test` | `password` |
 
-**Ganti kata sandi admin sebelum produksi.** Tidak ada akun demo leader/pengerja/jemaat dan tidak ada data KKJ/jemaat contoh.
+**Ganti kata sandi admin sebelum produksi.** Akun di atas adalah akun admin lokal hasil instalasi. Untuk mencoba versi demo, lihat tautan dan kredensial login yang tersedia di [orcc.web.id](https://orcc.web.id). Repositori ini tidak menyertakan data KKJ/jemaat contoh.
 
 Login menggunakan **email**, bukan nama pengguna. Nilai `ADMIN_PASSWORD` di `.env` hanya dipakai saat akun admin pertama kali dibuat; mengubahnya setelah akun ada tidak otomatis mengubah kata sandi di database.
 

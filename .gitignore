@@ -36,3 +36,5 @@ phpunit.xml.bak
 .idea
 .vscode
 *.log
+/public/.user.ini
+/public/.well-known/
